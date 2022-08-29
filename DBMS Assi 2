@@ -143,3 +143,301 @@ mysql> select *from loan;
 |      55 | C    |  6000 |
 +---------+------+-------+
 3 rows in set (0.00 sec)
+udo mysql
+[sudo] password for ubuntu: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 9
+Server version: 8.0.30-0ubuntu0.22.04.1 (Ubuntu)
+
+Copyright (c) 2000, 2022, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> use Bank;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> create table Branch (Acc_no int,B_n varchar(50),Bal int,primary key(Acc_no),foriegn key (B_n) references Branch(B_n));
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'key (B_n) references Branch(B_n))' at line 1
+mysql> create table Branch (Acc_no int,B_n varchar(50),Bal int,primary key(Acc_no),foreugn key (B_n) references Branch(B_n));
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'key (B_n) references Branch(B_n))' at line 1
+mysql> create table Branch (Acc_no int,B_n varchar(50),Bal int,primary key(Acc_no),foreign key (B_n) references Branch(B_n));
+ERROR 1050 (42S01): Table 'Branch' already exists
+mysql> create table Account (Acc_no int,B_n varchar(50),Bal int,primary key(Acc_no),foreign key (B_n) references Branch(B_n));
+Query OK, 0 rows affected (0.75 sec)
+
+mysql> create table customer (c_name varchar(50),c_street varchar(50),c_city varchar(50));
+Query OK, 0 rows affected (0.49 sec)
+
+mysql> create table customer (c_name varchar(50),Acc_no int,foreign key (c_name)references customer (c_name),foreign key(Acc_no) references Account(Acc_no));
+ERROR 1050 (42S01): Table 'customer' already exists
+mysql> create table Depositor (c_name varchar(50),Acc_no int,foreign key (c_name)references customer (c_name),foreign key(Acc_no) references Account(Acc_no));
+ERROR 1822 (HY000): Failed to add the foreign key constraint. Missing index for constraint 'Depositor_ibfk_1' in the referenced table 'customer'
+mysql> alter table customer add primary key
+    -> (c_name);
+Query OK, 0 rows affected (1.33 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> create table Depositor (c_name varchar(50),Acc_no int,foreign key (c_name)references customer (c_name),foreign key(Acc_no) references Account(Acc_no));
+Query OK, 0 rows affected (0.88 sec)
+
+mysql> create table loan (loan_no int,B_n varchar(50),amt int,foreign key(B_n) references Branch(B_n));
+Query OK, 0 rows affected (0.68 sec)
+
+mysql> alter table loan add primary key (loan_no);
+Query OK, 0 rows affected (1.49 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> create table borrower (c_name varchar(50),loan_no int,foreign key (c_name)references customer (c_name),foreign key(loan_no) references loan(loan_no));
+Query OK, 0 rows affected (1.75 sec)
+
+mysql> insert into Branch('A','Pune',500000),('C','pimpri',46765),('B','Pimpri',
+1232453);
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''A','Pune',500000),('C','pimpri',46765),('B','Pimpri',1232453)' at line 1
+mysql> insert into Branch values ('A','Pune',500000),('C','pimpri',46765),('B','Pimpri',1232453);
+Query OK, 3 rows affected (0.11 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> insert into Account values (404,'Pune',500000),(505,'pimpri',46065),(101,'Pimpri',12320);
+ERROR 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`Bank`.`Account`, CONSTRAINT `Account_ibfk_1` FOREIGN KEY (`B_n`) REFERENCES `Branch` (`B_n`))
+mysql> insert into Account values (404,'A',500000),(505,'C',46065),(101,'B',12320);
+Query OK, 3 rows affected (0.09 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> insert into loan values (44,'A',5000),(55,'C',6000),(11,'B',10000);
+Query OK, 3 rows affected (0.14 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> insert into customer values ('biscuit','AC',Pune),(,'C',6000),(11,'B',10000);
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ','C',6000),(11,'B',10000)' at line 1
+mysql> insert into customer values ('biscuit','shivajinagar','Pune'),('kaustubh','AC','pimpri'),('mhk','SC','pimpri');
+Query OK, 3 rows affected (0.09 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> insert into Depositor values ('biscuit',101),('kaustubh',505),('mhk',404)
+;
+Query OK, 3 rows affected (0.10 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> insert into borrower values ('biscuit',55),('kaustubh',44),('mhk',11);
+Query OK, 3 rows affected (0.16 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> show tables;
++----------------+
+| Tables_in_Bank |
++----------------+
+| Account        |
+| Branch         |
+| Depositor      |
+| borrower       |
+| customer       |
+| loan           |
++----------------+
+6 rows in set (0.00 sec)
+
+mysql> select B_n from loan;
++------+
+| B_n  |
++------+
+| A    |
+| B    |
+| C    |
++------+
+3 rows in set (0.00 sec)
+
+mysql> select loan_no from loan where B_n=B and amt>12000;
+ERROR 1054 (42S22): Unknown column 'B' in 'where clause'
+mysql> select loan_no from loan where B_n='B' and amt>12000;
+Empty set (0.00 sec)
+
+mysql> describe loan;
++---------+-------------+------+-----+---------+-------+
+| Field   | Type        | Null | Key | Default | Extra |
++---------+-------------+------+-----+---------+-------+
+| loan_no | int         | NO   | PRI | NULL    |       |
+| B_n     | varchar(50) | YES  | MUL | NULL    |       |
+| amt     | int         | YES  |     | NULL    |       |
++---------+-------------+------+-----+---------+-------+
+3 rows in set (0.01 sec)
+
+mysql> update loan set amt=12052 where B_n='b';
+Query OK, 1 row affected (0.14 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> select loan_no from loan where B_n='B' and amt>12000;
++---------+
+| loan_no |
++---------+
+|      11 |
++---------+
+1 row in set (0.00 sec)
+
+mysql> ^C
+mysql> select *from loan;
++---------+------+-------+
+| loan_no | B_n  | amt   |
++---------+------+-------+
+|      11 | B    | 12052 |
+|      44 | A    |  5000 |
+|      55 | C    |  6000 |
++---------+------+-------+
+3 rows in set (0.00 sec)
+udo mysql
+[sudo] password for ubuntu: 
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 9
+Server version: 8.0.30-0ubuntu0.22.04.1 (Ubuntu)
+
+Copyright (c) 2000, 2022, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> use Bank;
+Reading table information for completion of table and column names
+You can turn off this feature to get a quicker startup with -A
+
+Database changed
+mysql> create table Branch (Acc_no int,B_n varchar(50),Bal int,primary key(Acc_no),foriegn key (B_n) references Branch(B_n));
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'key (B_n) references Branch(B_n))' at line 1
+mysql> create table Branch (Acc_no int,B_n varchar(50),Bal int,primary key(Acc_no),foreugn key (B_n) references Branch(B_n));
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'key (B_n) references Branch(B_n))' at line 1
+mysql> create table Branch (Acc_no int,B_n varchar(50),Bal int,primary key(Acc_no),foreign key (B_n) references Branch(B_n));
+ERROR 1050 (42S01): Table 'Branch' already exists
+mysql> create table Account (Acc_no int,B_n varchar(50),Bal int,primary key(Acc_no),foreign key (B_n) references Branch(B_n));
+Query OK, 0 rows affected (0.75 sec)
+
+mysql> create table customer (c_name varchar(50),c_street varchar(50),c_city varchar(50));
+Query OK, 0 rows affected (0.49 sec)
+
+mysql> create table customer (c_name varchar(50),Acc_no int,foreign key (c_name)references customer (c_name),foreign key(Acc_no) references Account(Acc_no));
+ERROR 1050 (42S01): Table 'customer' already exists
+mysql> create table Depositor (c_name varchar(50),Acc_no int,foreign key (c_name)references customer (c_name),foreign key(Acc_no) references Account(Acc_no));
+ERROR 1822 (HY000): Failed to add the foreign key constraint. Missing index for constraint 'Depositor_ibfk_1' in the referenced table 'customer'
+mysql> alter table customer add primary key
+    -> (c_name);
+Query OK, 0 rows affected (1.33 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> create table Depositor (c_name varchar(50),Acc_no int,foreign key (c_name)references customer (c_name),foreign key(Acc_no) references Account(Acc_no));
+Query OK, 0 rows affected (0.88 sec)
+
+mysql> create table loan (loan_no int,B_n varchar(50),amt int,foreign key(B_n) references Branch(B_n));
+Query OK, 0 rows affected (0.68 sec)
+
+mysql> alter table loan add primary key (loan_no);
+Query OK, 0 rows affected (1.49 sec)
+Records: 0  Duplicates: 0  Warnings: 0
+
+mysql> create table borrower (c_name varchar(50),loan_no int,foreign key (c_name)references customer (c_name),foreign key(loan_no) references loan(loan_no));
+Query OK, 0 rows affected (1.75 sec)
+
+mysql> insert into Branch('A','Pune',500000),('C','pimpri',46765),('B','Pimpri',
+1232453);
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ''A','Pune',500000),('C','pimpri',46765),('B','Pimpri',1232453)' at line 1
+mysql> insert into Branch values ('A','Pune',500000),('C','pimpri',46765),('B','Pimpri',1232453);
+Query OK, 3 rows affected (0.11 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> insert into Account values (404,'Pune',500000),(505,'pimpri',46065),(101,'Pimpri',12320);
+ERROR 1452 (23000): Cannot add or update a child row: a foreign key constraint fails (`Bank`.`Account`, CONSTRAINT `Account_ibfk_1` FOREIGN KEY (`B_n`) REFERENCES `Branch` (`B_n`))
+mysql> insert into Account values (404,'A',500000),(505,'C',46065),(101,'B',12320);
+Query OK, 3 rows affected (0.09 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> insert into loan values (44,'A',5000),(55,'C',6000),(11,'B',10000);
+Query OK, 3 rows affected (0.14 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> insert into customer values ('biscuit','AC',Pune),(,'C',6000),(11,'B',10000);
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near ','C',6000),(11,'B',10000)' at line 1
+mysql> insert into customer values ('biscuit','shivajinagar','Pune'),('kaustubh','AC','pimpri'),('mhk','SC','pimpri');
+Query OK, 3 rows affected (0.09 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> insert into Depositor values ('biscuit',101),('kaustubh',505),('mhk',404)
+;
+Query OK, 3 rows affected (0.10 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> insert into borrower values ('biscuit',55),('kaustubh',44),('mhk',11);
+Query OK, 3 rows affected (0.16 sec)
+Records: 3  Duplicates: 0  Warnings: 0
+
+mysql> show tables;
++----------------+
+| Tables_in_Bank |
++----------------+
+| Account        |
+| Branch         |
+| Depositor      |
+| borrower       |
+| customer       |
+| loan           |
++----------------+
+6 rows in set (0.00 sec)
+
+mysql> select B_n from loan;
++------+
+| B_n  |
++------+
+| A    |
+| B    |
+| C    |
++------+
+3 rows in set (0.00 sec)
+
+mysql> select loan_no from loan where B_n=B and amt>12000;
+ERROR 1054 (42S22): Unknown column 'B' in 'where clause'
+mysql> select loan_no from loan where B_n='B' and amt>12000;
+Empty set (0.00 sec)
+
+mysql> describe loan;
++---------+-------------+------+-----+---------+-------+
+| Field   | Type        | Null | Key | Default | Extra |
++---------+-------------+------+-----+---------+-------+
+| loan_no | int         | NO   | PRI | NULL    |       |
+| B_n     | varchar(50) | YES  | MUL | NULL    |       |
+| amt     | int         | YES  |     | NULL    |       |
++---------+-------------+------+-----+---------+-------+
+3 rows in set (0.01 sec)
+
+mysql> update loan set amt=12052 where B_n='b';
+Query OK, 1 row affected (0.14 sec)
+Rows matched: 1  Changed: 1  Warnings: 0
+
+mysql> select loan_no from loan where B_n='B' and amt>12000;
++---------+
+| loan_no |
++---------+
+|      11 |
++---------+
+1 row in set (0.00 sec)
+
+mysql> ^C
+mysql> select *from loan;
++---------+------+-------+
+| loan_no | B_n  | amt   |
++---------+------+-------+
+|      11 | B    | 12052 |
+|      44 | A    |  5000 |
+|      55 | C    |  6000 |
++---------+------+-------+
+3 rows in set (0.00 sec)
+select borrower.c_name,loan.loan_no,loan.amt from loan inner join borrower on borrower.loan_no=loan.loan_no;
++----------+---------+-------+
+| c_name   | loan_no | amt   |
++----------+---------+-------+
+| mhk      |      11 | 12052 |
+| kaustubh |      44 |  5000 |
+| biscuit  |      55 |  6000 |
++----------+---------+-------+
